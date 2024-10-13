@@ -1,0 +1,107 @@
+import { PrismaClient } from "@prisma/client";
+import { withAccelerate } from "@prisma/extension-accelerate";
+import { Hono } from "hono";
+import { verify } from "hono/jwt";
+
+export const blogRouter = new Hono<{
+  Bindings: {
+    DATABASE_URL: string;
+    JWT_SECRET: string;
+  };
+  Variables: {
+    userId: string;
+  };
+}>();
+
+blogRouter.use("/*", async (c, next) => {
+  const token = c.req.header("Authorization");
+  if (!token) {
+    c.status(401);
+    return c.json({ error: "unauthorized" });
+  }
+  const jwt = token.split("")[1];
+  const payload = await verify(jwt, c.env.JWT_SECRET);
+  if (!payload) {
+    c.status(401);
+    return c.json({ error: "unautorized" });
+  }
+  //@ts-ignore
+  c.set("userId", payload.id);
+  await next();
+});
+
+blogRouter.post("/blog", async (c) => {
+  const body = await c.req.json();
+  const id = c.get("userId");
+
+  const prisma = new PrismaClient({
+    datasourceUrl: c.env.DATABASE_URL,
+  }).$extends(withAccelerate());
+
+  const blog = await prisma.post.create({
+    data: {
+      title: body.title,
+      content: body.content,
+      authorId: id,
+    },
+  });
+
+  return c.json({ id: blog.id });
+});
+
+blogRouter.put("/blog", async (c) => {
+  const body = await c.req.json();
+
+  const prisma = new PrismaClient({
+    datasourceUrl: c.env.DATABASE_URL,
+  }).$extends(withAccelerate());
+
+  const blog = await prisma.post.update({
+    where: {
+      id: body.id,
+    },
+    data: {
+      title: body.title,
+      content: body.content,
+    },
+  });
+
+  return c.json({ id: blog.id });
+});
+
+blogRouter.get("/blog/:id", async (c) => {
+  const id = c.req.param("id");
+
+  const prisma = new PrismaClient({
+    datasourceUrl: c.env.DATABASE_URL,
+  }).$extends(withAccelerate());
+
+  try {
+    const blog = await prisma.post.findUnique({
+      where: {
+        id: id,
+      },
+    });
+
+    return c.json(blog);
+  } catch (error) {
+    c.status(411);
+    return c.json({
+      message: "error while fetching blog post",
+    });
+  }
+});
+
+blogRouter.get("/blog/bulk", async (c) => {
+  const prisma = new PrismaClient({
+    datasourceUrl: c.env.DATABASE_URL,
+  }).$extends(withAccelerate());
+
+  try {
+    const posts = await prisma.post.findMany();
+    return c.json(posts);
+  } catch (error) {
+    c.status(404);
+    return c.json({ message: "not found" });
+  }
+});
