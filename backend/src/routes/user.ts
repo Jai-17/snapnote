@@ -1,8 +1,11 @@
-import { PrismaClient } from "@prisma/client";
-import { withAccelerate } from "@prisma/extension-accelerate";
+import { PrismaClient } from '@prisma/client/edge'
+import { withAccelerate } from '@prisma/extension-accelerate'
 import { Hono } from "hono";
 import { sign } from "hono/jwt";
 import { signupInput } from "@jaimadhukar/medium-common"
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 export const userRouter = new Hono<{
   Bindings: {
@@ -42,6 +45,7 @@ userRouter.post("/signup", async (c) => {
     return c.text(jwt);
   } catch (error) {
     c.status(403);
+    console.log(error);
     return c.text("Error creating user");
   }
 });
