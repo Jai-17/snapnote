@@ -1,1 +1,1 @@
-export const BACKEND_URL = "https://medium.gojo-testing.workers.dev/"
+export const BACKEND_URL = "https://medium.gojo-testing.workers.dev"
