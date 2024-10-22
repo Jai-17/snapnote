@@ -3,6 +3,7 @@ import Signin from "./pages/Signin";
 import Signup from "./pages/Signup";
 import Blog from "./pages/Blog";
 import Blogs from "./pages/Blogs";
+import Publish from "./pages/Publish";
 
 const router = createBrowserRouter([
   {
@@ -24,6 +25,10 @@ const router = createBrowserRouter([
         path: "/blog/:id",
         element: <Blog />,
       },
+      {
+        path: '/publish',
+        element: <Publish />
+      }
     ],
   },
 ]);

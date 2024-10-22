@@ -1,16 +1,30 @@
-// import { useBlog } from "../hooks"
-
+import { useParams } from "react-router-dom";
+import { useBlog } from "../hooks";
+import { FullBlog } from "../components/FullBlog";
+import Appbar from "../components/Appbar";
+import Spinner from "../components/Spinner";
 
 const Blog = () => {
-  // const {loading, blog} = useBlog();
-  // if(loading) {
-  //   return <div>Loading...</div>
-  // }
+  const { id } = useParams();
+  const { loading, blog } = useBlog({ id: id || "" });
+  if (loading || !blog) {
+    return (
+      <div>
+        <Appbar />
+        <div className="h-screen flex flex-col justify-center">
+          <div className="flex justify-center">
+            <Spinner />
+          </div>
+        </div>
+      </div>
+    )
+  }
+  
   return (
     <div>
-      Blog
+      <FullBlog blog={blog} />
     </div>
-  )
-}
+  );
+};
 
-export default Blog
+export default Blog;
