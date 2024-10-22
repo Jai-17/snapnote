@@ -1,1 +1,1 @@
-export const BACKEND_URL = "http://localhost:8787"
+export const BACKEND_URL = "https://medium.gojo-testing.workers.dev/"
